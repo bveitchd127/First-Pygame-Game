@@ -17,7 +17,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 running = True
 
-waveNumber = 100
+waveNumber = 0
 
 def waveToEnemyCount(waveNumber):
     return round(1/13 * waveNumber**2 + 10)
