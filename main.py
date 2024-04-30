@@ -49,6 +49,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
+            print(len(projectiles))
             if event.button == 1 and p1.speed < 7:
                 # Spawn projectile
                 playerToMouse = pygame.math.Vector2( event.pos ) - p1.rect.center
@@ -96,10 +97,15 @@ while running:
     enemyCountText = ui_font.render("Enemy count: " + str(len(enemies)), True, "white")
     screen.blit(enemyCountText, (20, 50))
 
-    playerHealthBarWidth = 400 * (p1.health / 10)
+    playerHealthBarWidth = 400 * (p1.health / p1.maxHealth)
     pygame.draw.rect(screen, "gray",  pygame.Rect(20, SCREEN_HEIGHT - (40+20) ,                  400, 40), 0, 15)
     pygame.draw.rect(screen, "red",   pygame.Rect(20, SCREEN_HEIGHT - (40+20) , playerHealthBarWidth, 40), 0, 15)
     pygame.draw.rect(screen, "black", pygame.Rect(20, SCREEN_HEIGHT - (40+20) ,                  400, 40), 3, 15)
+
+    playerStaminaBarWidth = 400 * (p1.stamina / p1.maxStamina)
+    pygame.draw.rect(screen, "gray",  pygame.Rect(SCREEN_WIDTH - 20 - 400, SCREEN_HEIGHT - (40+20) ,                   400, 40), 0, 15)
+    pygame.draw.rect(screen, "green", pygame.Rect(SCREEN_WIDTH - 20 - 400, SCREEN_HEIGHT - (40+20) , playerStaminaBarWidth, 40), 0, 15)
+    pygame.draw.rect(screen, "black", pygame.Rect(SCREEN_WIDTH - 20 - 400, SCREEN_HEIGHT - (40+20) ,                   400, 40), 3, 15)
     
     
     pygame.display.flip()

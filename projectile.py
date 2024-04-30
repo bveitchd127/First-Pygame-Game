@@ -12,10 +12,10 @@ class Projectile(pygame.sprite.Sprite):
 
         self.velocity = pygame.math.Vector2( (velx, vely) )
 
-        print( -pygame.math.Vector2((0,-1)).angle_to(self.velocity) )
+        assetRotation = -pygame.math.Vector2((0,-1)).angle_to(self.velocity)
 
         canvasRect = pygame.Rect((0,0), self.rect.size)
-        projectileAssetSurface = pygame.transform.rotate( pygame.image.load("projectile.png") , 90 )
+        projectileAssetSurface = pygame.transform.rotate( pygame.image.load("projectile.png") , assetRotation )
         projectileAssetRect = projectileAssetSurface.get_rect(center = canvasRect.center)
 
         self.image.blit(projectileAssetSurface, projectileAssetRect)
@@ -25,6 +25,7 @@ class Projectile(pygame.sprite.Sprite):
 
         self.durability = 3
         self.damage = 1
+        self.despawnTimer = 2.5
     
     def getDamage(self):
         self.durability -= 1
@@ -33,6 +34,9 @@ class Projectile(pygame.sprite.Sprite):
         return self.damage
     
     def update(self):
+        self.despawnTimer -= 1/60
+        if self.despawnTimer < 0:
+            self.kill()
         self.rect.x += self.velocity.x
         self.rect.y += self.velocity.y
 
