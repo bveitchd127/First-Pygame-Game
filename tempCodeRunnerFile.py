@@ -1,0 +1,1 @@
+len(enemies) < 100
