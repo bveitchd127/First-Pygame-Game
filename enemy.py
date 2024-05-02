@@ -2,15 +2,17 @@ import pygame
 import random
 from settings import *
 
+
+enemyScale = 2
+
+originalImage = pygame.image.load("enemy_spritesheet.png")
+originalImage = pygame.transform.scale_by(originalImage, enemyScale)
+
+
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
 
-        enemyScale = 2
-
-        originalImage = pygame.image.load("enemy_spritesheet.png")
-        originalImage = pygame.transform.scale_by(originalImage, enemyScale)
-        
         self.image = pygame.Surface( (enemyScale*16, enemyScale*16), pygame.SRCALPHA )
         self.image.blit(originalImage, (0,0), pygame.Rect(0,0, enemyScale*16, enemyScale*16))
 

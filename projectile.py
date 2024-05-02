@@ -1,7 +1,7 @@
 import pygame
 
 class Projectile(pygame.sprite.Sprite):
-    def __init__(self, x, y, velx, vely):
+    def __init__(self, x, y, velx, vely, damage = 1, durability = 1):
         super().__init__()
 
         # sword is 6x15
@@ -23,9 +23,12 @@ class Projectile(pygame.sprite.Sprite):
         # self.image.fill("gray")
         
 
-        self.durability = 3
-        self.damage = 1
+        self.durability = durability
+        self.exemptEnemies = pygame.sprite.Group()
+
+        self.damage = damage
         self.despawnTimer = 2.5
+
     
     def getDamage(self):
         self.durability -= 1
