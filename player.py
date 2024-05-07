@@ -40,6 +40,16 @@ class Player:
         self.speed = 5
         self.baseSpeed = 5  # upgradeable
         self.invincibleCooldown = 0
+
+        self.statLevels = {
+            "damage": 0,
+            "piercing": 0,
+            "healthRegen": 0,
+            "maxHealth": 0,
+            "staminaRegen": 0,
+            "maxStamina": 0,
+            "baseSpeed": 0
+        }
     
     def takeDamage(self, damageAmount):
         if self.invincibleCooldown <= 0:
@@ -73,18 +83,25 @@ class Player:
         print(numToStat[randomStatNum])
         if randomStatNum == 0:
             self.damage += 0.1
+            self.statLevels["damage"] += 1
         elif randomStatNum == 1:
             self.piercing += 1
+            self.statLevels["piercing"] += 1
         elif randomStatNum == 2:
             self.healthRegen += 0.1
+            self.statLevels["healthRegen"] += 1
         elif randomStatNum == 3:
             self.maxHealth += 1
+            self.statLevels["maxHealth"] += 1
         elif randomStatNum == 4:
             self.staminaRegen += 0.1
+            self.statLevels["staminaRegen"] += 1
         elif randomStatNum == 5:
             self.maxStamina += 1
+            self.statLevels["maxStamina"] += 1
         elif randomStatNum == 6:
             self.baseSpeed += 0.5
+            self.statLevels["baseSpeed"] += 1
         else:
             print("Error: No matching perk to level up...")
 

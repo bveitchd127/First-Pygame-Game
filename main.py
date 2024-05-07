@@ -12,6 +12,7 @@ pygame.init()
 pygame.font.init()
 
 ui_font = pygame.font.SysFont(None, 32)
+stat_font = pygame.font.SysFont(None, 24)
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
@@ -41,6 +42,50 @@ def spawnEnemies(numberOfEnemies):
             continue
 
         enemies.add( Enemy(randX, randY) )
+
+
+def drawUi(screen):
+    # Shows "Wave #: 3 at top left"
+    waveNumberText = ui_font.render("Wave #: " + str(waveNumber), True, "white")
+    screen.blit(waveNumberText, (20,20))
+
+    # Shows "Enemy count: 57" below wave number
+    enemyCountText = ui_font.render("Enemy count: " + str(len(enemies)), True, "white")
+    screen.blit(enemyCountText, (20, 50))
+
+    playerLevelText = ui_font.render("Player level: " + str(p1.level), True, "white")
+    screen.blit(playerLevelText, (20, 110))
+
+    playerXpText = ui_font.render("Player xp: " + str(p1.xp), True, "white")
+    screen.blit(playerXpText, (20, 140))
+
+
+    for i, statName in enumerate(p1.statLevels):
+        statLevel = p1.statLevels[statName]
+
+        statSurface = stat_font.render(statName + ": " + str(statLevel), True, "white")
+        screen.blit(statSurface, (20, 200 + 24*i))
+
+        
+
+
+
+    # Player health bar
+    playerHealthBarWidth = 400 * (p1.health / p1.maxHealth)
+    pygame.draw.rect(screen, "gray",  pygame.Rect(20, SCREEN_HEIGHT - (40+20) ,                  400, 40), 0, 15)
+    pygame.draw.rect(screen, "red",   pygame.Rect(20, SCREEN_HEIGHT - (40+20) , playerHealthBarWidth, 40), 0, 15)
+    pygame.draw.rect(screen, "black", pygame.Rect(20, SCREEN_HEIGHT - (40+20) ,                  400, 40), 3, 15)
+
+    staminaColor = "green"
+    if p1.winded:
+        staminaColor = (255, 200, 0)
+
+    # Player stamina bar
+    playerStaminaBarWidth = 400 * (p1.stamina / p1.maxStamina)
+    pygame.draw.rect(screen, "gray",  pygame.Rect(SCREEN_WIDTH - 20 - 400, SCREEN_HEIGHT - (40+20) ,                   400, 40), 0, 15)
+    pygame.draw.rect(screen, staminaColor, pygame.Rect(SCREEN_WIDTH - 20 - 400, SCREEN_HEIGHT - (40+20) , playerStaminaBarWidth, 40), 0, 15)
+    pygame.draw.rect(screen, "black", pygame.Rect(SCREEN_WIDTH - 20 - 400, SCREEN_HEIGHT - (40+20) ,                   400, 40), 3, 15)
+
 
 while running:
 
@@ -92,40 +137,12 @@ while running:
 
     # Entity Layer
     p1.draw(screen)
-    enemies.draw(screen)
+    for e in enemies:
+        e.draw(screen)
     projectiles.draw(screen)
 
-    # User Interface Layer
-    # playerHealthText = ui_font.render("Health: " + str(p1.health), True, "white")
-    # screen.blit(playerHealthText, (20,20))
-
-    waveNumberText = ui_font.render("Wave #: " + str(waveNumber), True, "white")
-    screen.blit(waveNumberText, (20,20))
-
-    enemyCountText = ui_font.render("Enemy count: " + str(len(enemies)), True, "white")
-    screen.blit(enemyCountText, (20, 50))
-
-    playerLevelText = ui_font.render("Player level: " + str(p1.level), True, "white")
-    screen.blit(playerLevelText, (20, 110))
-
-    playerXpText = ui_font.render("Player xp: " + str(p1.xp), True, "white")
-    screen.blit(playerXpText, (20, 140))
-
-
-    playerHealthBarWidth = 400 * (p1.health / p1.maxHealth)
-    pygame.draw.rect(screen, "gray",  pygame.Rect(20, SCREEN_HEIGHT - (40+20) ,                  400, 40), 0, 15)
-    pygame.draw.rect(screen, "red",   pygame.Rect(20, SCREEN_HEIGHT - (40+20) , playerHealthBarWidth, 40), 0, 15)
-    pygame.draw.rect(screen, "black", pygame.Rect(20, SCREEN_HEIGHT - (40+20) ,                  400, 40), 3, 15)
-
-    staminaColor = "green"
-    if p1.winded:
-        staminaColor = (255, 200, 0)
-
-    playerStaminaBarWidth = 400 * (p1.stamina / p1.maxStamina)
-    pygame.draw.rect(screen, "gray",  pygame.Rect(SCREEN_WIDTH - 20 - 400, SCREEN_HEIGHT - (40+20) ,                   400, 40), 0, 15)
-    pygame.draw.rect(screen, staminaColor, pygame.Rect(SCREEN_WIDTH - 20 - 400, SCREEN_HEIGHT - (40+20) , playerStaminaBarWidth, 40), 0, 15)
-    pygame.draw.rect(screen, "black", pygame.Rect(SCREEN_WIDTH - 20 - 400, SCREEN_HEIGHT - (40+20) ,                   400, 40), 3, 15)
-    
+    # Draw User Interface
+    drawUi(screen)
     
     pygame.display.flip()
     clock.tick(FRAME_RATE)  # limits FPS to 60

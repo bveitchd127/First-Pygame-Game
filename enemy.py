@@ -42,3 +42,8 @@ class Enemy(pygame.sprite.Sprite):
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
+        healthBarRect = pygame.Rect(0,0, 32,6)
+        healthBarRect.midbottom = self.rect.midtop
+        pygame.draw.rect(screen, "gray", healthBarRect, 0, 3)
+        # healthBarRect.width = (self.health/4)*32
+        # pygame.draw.rect(screen, "red", healthBarRect, 0, 3)
