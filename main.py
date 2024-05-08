@@ -3,6 +3,7 @@ import pygame
 #     file          class
 from player import Player
 from enemy import Enemy
+from boss import Boss
 from projectile import Projectile
 from settings import *
 import random
@@ -18,6 +19,9 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 running = True
 
+# "start", "play", "lost"
+currentScene = "start"
+
 waveNumber = 0
 
 def waveToEnemyCount(waveNumber):
@@ -29,7 +33,17 @@ p1 = Player(200, 100, pygame.Color("#272910"))
 enemies = pygame.sprite.Group()
 projectiles = pygame.sprite.Group()
 
+startButton = pygame.Rect(0,0,400,200)
+startButton.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
+retryButton = pygame.Rect(0,0,400,200)
+retryButton.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 250)
+exitButton  = pygame.Rect(0,0,400,200)
+exitButton.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 250)
+
+
 def spawnEnemies(numberOfEnemies):
+    
+
     while (len(enemies) < numberOfEnemies):
         randX = random.randint(0, SCREEN_WIDTH)
         randY = random.randint(0, SCREEN_HEIGHT)
@@ -40,9 +54,12 @@ def spawnEnemies(numberOfEnemies):
         # If enemy spawn is too close, dont spawn there
         if distanceToPlayer < SAFE_ENEMY_RADIUS:
             continue
-
-        enemies.add( Enemy(randX, randY) )
-
+        
+        bossChance = random.randint(0,100)
+        if bossChance < waveNumber:
+            enemies.add( Boss(randX, randY) )
+        else:
+            enemies.add( Enemy(randX, randY) )
 
 def drawUi(screen):
     # Shows "Wave #: 3 at top left"
@@ -86,22 +103,9 @@ def drawUi(screen):
     pygame.draw.rect(screen, staminaColor, pygame.Rect(SCREEN_WIDTH - 20 - 400, SCREEN_HEIGHT - (40+20) , playerStaminaBarWidth, 40), 0, 15)
     pygame.draw.rect(screen, "black", pygame.Rect(SCREEN_WIDTH - 20 - 400, SCREEN_HEIGHT - (40+20) ,                   400, 40), 3, 15)
 
-
-while running:
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1 and p1.speed < p1.baseSpeed*1.5:
-                # Spawn projectile
-                playerToMouse = pygame.math.Vector2( event.pos ) - p1.rect.center
-                if playerToMouse.magnitude() > 0:
-                    playerToMouse.scale_to_length( 10 )
-                projectiles.add( Projectile(p1.rect.centerx, p1.rect.centery,  playerToMouse.x, playerToMouse.y, p1.damage, p1.piercing) )
-
-    # If there are no enemies in the enemies group
-    # spawn enemies
+def gameUpdate():
+    global waveNumber, currentScene
+    # Part of Game Loop
     if len(enemies) == 0:
         waveNumber += 1
         spawnEnemies( waveToEnemyCount(waveNumber) )
@@ -112,7 +116,7 @@ while running:
     enemies.update(p1)
     projectiles.update()
 
-    # For every enemy...
+    #   Checking collisions for enemies and projectiles
     for enemy in enemies:
         # ... check every projectile for collision
         for projectile in projectiles:
@@ -131,7 +135,47 @@ while running:
         # add random amount of xp to player
         xpAmount = max(random.randint(-2, 3), 0)
         p1.xp += xpAmount
-                
+    
+    if p1.health <= 0:
+        currentScene = "lost"
+
+def resetGame():
+    global p1, waveNumber
+    p1 = Player(200, 100, pygame.Color("#272910"))
+    waveNumber = 0
+    enemies.empty()
+    projectiles.empty()
+
+
+while running:
+
+    # Check keyboard and mouse events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if currentScene == "play":
+                if event.button == 1 and p1.speed < p1.baseSpeed*1.5:
+                    # Spawn projectile
+                    playerToMouse = pygame.math.Vector2( event.pos ) - p1.rect.center
+                    if playerToMouse.magnitude() > 0:
+                        playerToMouse.scale_to_length( 10 )
+                    projectiles.add( Projectile(p1.rect.centerx, p1.rect.centery,  playerToMouse.x, playerToMouse.y, p1.damage, p1.piercing) )
+            elif currentScene == "start":
+                if event.button == 1 and startButton.collidepoint( pygame.mouse.get_pos() ):
+                    currentScene = "play"
+            elif currentScene == "lost":
+                if event.button == 1 and retryButton.collidepoint( pygame.mouse.get_pos() ):
+                    currentScene = "play"
+                    resetGame()
+                elif event.button == 1 and exitButton.collidepoint( pygame.mouse.get_pos() ):
+                    running = False
+
+
+    if currentScene == "play":
+        gameUpdate()
+
+
     # Background Layer
     screen.fill(BACKGROUND_COLOR)
 
@@ -142,8 +186,14 @@ while running:
     projectiles.draw(screen)
 
     # Draw User Interface
-    drawUi(screen)
-    
+    if currentScene == "play":
+        drawUi(screen)
+    elif currentScene == "start":
+        pygame.draw.rect(screen, "green", startButton, 0, 50)
+    else:
+        pygame.draw.rect(screen, "green", retryButton, 0, 50)
+        pygame.draw.rect(screen, "green", exitButton,  0, 50)
+
     pygame.display.flip()
     clock.tick(FRAME_RATE)  # limits FPS to 60
 

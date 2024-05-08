@@ -18,7 +18,8 @@ class Enemy(pygame.sprite.Sprite):
 
         self.rect  = pygame.Rect( (x,y) , self.image.get_size() ) # This represents the location and hitbox
 
-        self.health = 4
+        self.maxHealth = 4
+        self.health = self.maxHealth
         self.speed = random.random()*2 + 1.5 # 1.5 <= self.speed < 3.5
         self.strength = 2
     
@@ -42,8 +43,12 @@ class Enemy(pygame.sprite.Sprite):
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
-        healthBarRect = pygame.Rect(0,0, 32,6)
+
+        # health bar will be width of hitbox
+
+        healthBarRect = pygame.Rect(0, 0, self.rect.width, self.rect.width//6)
         healthBarRect.midbottom = self.rect.midtop
+
         pygame.draw.rect(screen, "gray", healthBarRect, 0, 3)
-        # healthBarRect.width = (self.health/4)*32
-        # pygame.draw.rect(screen, "red", healthBarRect, 0, 3)
+        healthBarRect.width = (self.health/self.maxHealth)*self.rect.width
+        pygame.draw.rect(screen, "red", healthBarRect, 0, 3)
