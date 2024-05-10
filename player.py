@@ -25,8 +25,8 @@ class Player:
         self.level = 1
         self.xp = 0
 
-        self.damage = 1 # upgradeable
-        self.piercing = 1  # upgradeable
+        self.damage = 10 # upgradeable
+        self.piercing = 10  # upgradeable
 
         self.health = 10
         self.healthRegen = 0  # upgradeable

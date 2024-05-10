@@ -8,10 +8,13 @@ from projectile import Projectile
 from settings import *
 import random
 
+username = input("What's your name?: ")
+
 # pygame setup
 pygame.init()
 pygame.font.init()
 
+button_font = pygame.font.SysFont(None, 72)
 ui_font = pygame.font.SysFont(None, 32)
 stat_font = pygame.font.SysFont(None, 24)
 
@@ -22,7 +25,7 @@ running = True
 # "start", "play", "lost"
 currentScene = "start"
 
-waveNumber = 0
+waveNumber = 20
 
 def waveToEnemyCount(waveNumber):
     return round(1/13 * waveNumber**2 + 10)
@@ -33,26 +36,53 @@ p1 = Player(200, 100, pygame.Color("#272910"))
 enemies = pygame.sprite.Group()
 projectiles = pygame.sprite.Group()
 
-startButton = pygame.Rect(0,0,400,200)
-startButton.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
-retryButton = pygame.Rect(0,0,400,200)
-retryButton.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 250)
-exitButton  = pygame.Rect(0,0,400,200)
+startButton = pygame.Rect(0,0,400,150)
+startButton.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 50)
+startText = button_font.render("Start", True, "white")
+startTextRect = startText.get_rect(center = startButton.center)
+
+retryButton = pygame.Rect(0,0,400,150)
+retryButton.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 50)
+retryText = button_font.render("Retry", True, "white")
+retryTextRect = retryText.get_rect(center = retryButton.center)
+
+exitButton  = pygame.Rect(0,0,400,150)
 exitButton.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 250)
+exitText = button_font.render("Exit", True, "white")
+exitTextRect = exitText.get_rect(center = exitButton.center)
+
+
+background = pygame.Surface((SCREEN_WIDTH,SCREEN_HEIGHT))
+
+# random.randint(0,4) -> 0,1,2,3,4
+# random.randint(0,4)*32 -> 0,32,64,96,128
+# topleft corners of tiles (0,160) , (32, 160) , (64,160) , (96,160) , (128,160)
+# tiles are 32x32
+tileOffsetX = 352
+tileOffsetY = 608
+floorTileSet = pygame.image.load("TilesetFloor.png")
+floorTileSet = pygame.transform.scale_by(floorTileSet, 2)
+for r in range(0, SCREEN_HEIGHT, 32):
+    for c in range(0, SCREEN_WIDTH, 32):
+        randomTileX = max(0,random.randint(-8,4))*32
+        background.blit(floorTileSet, (c, r), pygame.Rect(tileOffsetX + randomTileX, tileOffsetY, 32,32))
+
 
 
 def spawnEnemies(numberOfEnemies):
     
-
     while (len(enemies) < numberOfEnemies):
-        randX = random.randint(0, SCREEN_WIDTH)
-        randY = random.randint(0, SCREEN_HEIGHT)
+        randX = random.randint(-1000, SCREEN_WIDTH + 1000)
+        randY = random.randint(-1000, SCREEN_HEIGHT + 1000)
 
         # calculate the distance between random point and player
         distanceToPlayer = (pygame.math.Vector2(p1.rect.center) - (randX, randY)).magnitude()
 
         # If enemy spawn is too close, dont spawn there
         if distanceToPlayer < SAFE_ENEMY_RADIUS:
+            continue
+
+        if 0 < randX < SCREEN_WIDTH and 0 < randY < SCREEN_HEIGHT:
             continue
         
         bossChance = random.randint(0,100)
@@ -89,9 +119,9 @@ def drawUi(screen):
 
     # Player health bar
     playerHealthBarWidth = 400 * (p1.health / p1.maxHealth)
-    pygame.draw.rect(screen, "gray",  pygame.Rect(20, SCREEN_HEIGHT - (40+20) ,                  400, 40), 0, 15)
-    pygame.draw.rect(screen, "red",   pygame.Rect(20, SCREEN_HEIGHT - (40+20) , playerHealthBarWidth, 40), 0, 15)
-    pygame.draw.rect(screen, "black", pygame.Rect(20, SCREEN_HEIGHT - (40+20) ,                  400, 40), 3, 15)
+    pygame.draw.rect(screen, (58,54,66),  pygame.Rect(20, SCREEN_HEIGHT - (40+20) ,                  400, 40), 0, 15)
+    pygame.draw.rect(screen, (206,72,81),   pygame.Rect(20, SCREEN_HEIGHT - (40+20) , playerHealthBarWidth, 40), 0, 15)
+    pygame.draw.rect(screen, (21,27,27), pygame.Rect(20, SCREEN_HEIGHT - (40+20) ,                  400, 40), 3, 15)
 
     staminaColor = "green"
     if p1.winded:
@@ -99,9 +129,9 @@ def drawUi(screen):
 
     # Player stamina bar
     playerStaminaBarWidth = 400 * (p1.stamina / p1.maxStamina)
-    pygame.draw.rect(screen, "gray",  pygame.Rect(SCREEN_WIDTH - 20 - 400, SCREEN_HEIGHT - (40+20) ,                   400, 40), 0, 15)
+    pygame.draw.rect(screen, (58,54,66),  pygame.Rect(SCREEN_WIDTH - 20 - 400, SCREEN_HEIGHT - (40+20) ,                   400, 40), 0, 15)
     pygame.draw.rect(screen, staminaColor, pygame.Rect(SCREEN_WIDTH - 20 - 400, SCREEN_HEIGHT - (40+20) , playerStaminaBarWidth, 40), 0, 15)
-    pygame.draw.rect(screen, "black", pygame.Rect(SCREEN_WIDTH - 20 - 400, SCREEN_HEIGHT - (40+20) ,                   400, 40), 3, 15)
+    pygame.draw.rect(screen, (21,27,27), pygame.Rect(SCREEN_WIDTH - 20 - 400, SCREEN_HEIGHT - (40+20) ,                   400, 40), 3, 15)
 
 def gameUpdate():
     global waveNumber, currentScene
@@ -137,15 +167,17 @@ def gameUpdate():
         p1.xp += xpAmount
     
     if p1.health <= 0:
+        with open("leaderboard.txt", "a") as textFile:
+            textFile.write(f"{username} {waveNumber}\n")
         currentScene = "lost"
 
 def resetGame():
     global p1, waveNumber
+
     p1 = Player(200, 100, pygame.Color("#272910"))
     waveNumber = 0
     enemies.empty()
     projectiles.empty()
-
 
 while running:
 
@@ -164,6 +196,8 @@ while running:
             elif currentScene == "start":
                 if event.button == 1 and startButton.collidepoint( pygame.mouse.get_pos() ):
                     currentScene = "play"
+                elif event.button == 1 and exitButton.collidepoint( pygame.mouse.get_pos() ):
+                    running = False
             elif currentScene == "lost":
                 if event.button == 1 and retryButton.collidepoint( pygame.mouse.get_pos() ):
                     currentScene = "play"
@@ -177,7 +211,8 @@ while running:
 
 
     # Background Layer
-    screen.fill(BACKGROUND_COLOR)
+    # screen.fill(BACKGROUND_COLOR)
+    screen.blit(background, (0,0))
 
     # Entity Layer
     p1.draw(screen)
@@ -189,10 +224,21 @@ while running:
     if currentScene == "play":
         drawUi(screen)
     elif currentScene == "start":
-        pygame.draw.rect(screen, "green", startButton, 0, 50)
+        pygame.draw.rect(screen, "green", startButton, 0, 50) # button background
+        screen.blit(startText, startTextRect)
+        pygame.draw.rect(screen, "black", startButton, 5, 50) # button border
+
+        pygame.draw.rect(screen, "green", exitButton,  0, 50)
+        screen.blit(exitText, exitTextRect)
+        pygame.draw.rect(screen, "black", exitButton,  5, 50)
     else:
         pygame.draw.rect(screen, "green", retryButton, 0, 50)
+        screen.blit(retryText, retryTextRect)
+        pygame.draw.rect(screen, "black", retryButton, 5, 50)
+
         pygame.draw.rect(screen, "green", exitButton,  0, 50)
+        screen.blit(exitText, exitTextRect)
+        pygame.draw.rect(screen, "black", exitButton,  5, 50)
 
     pygame.display.flip()
     clock.tick(FRAME_RATE)  # limits FPS to 60
